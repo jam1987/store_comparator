@@ -11,11 +11,10 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Celular',
+            name='Producto',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('idCel', models.CharField(max_length=200)),
-                ('nombreCel', models.CharField(max_length=200)),
+                ('idProducto', models.CharField(primary_key=True, serialize=False, max_length=200)),
+                ('nombreProducto', models.CharField(max_length=200)),
             ],
             options={
             },
@@ -24,8 +23,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Tienda',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('idTienda', models.CharField(max_length=200)),
+                ('idTienda', models.CharField(primary_key=True, serialize=False, max_length=200)),
                 ('nombreTienda', models.CharField(max_length=200)),
                 ('direccion', models.URLField()),
             ],
@@ -36,13 +34,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Vende_Producto',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('precio', models.DecimalField(max_digits=10, decimal_places=2)),
-                ('idCel', models.ForeignKey(to='stores.Celular')),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('precio', models.CharField(max_length=200)),
+                ('idProducto', models.ForeignKey(to='stores.Producto')),
                 ('idTienda', models.ForeignKey(to='stores.Tienda')),
             ],
             options={
             },
             bases=(models.Model,),
+        ),
+        migrations.AlterUniqueTogether(
+            name='vende_producto',
+            unique_together=set([('idTienda', 'idProducto')]),
+        ),
+        migrations.AddField(
+            model_name='tienda',
+            name='dispositivos',
+            field=models.ManyToManyField(through='stores.Vende_Producto', to='stores.Producto'),
+            preserve_default=True,
         ),
     ]

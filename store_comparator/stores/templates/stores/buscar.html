@@ -5,11 +5,32 @@
        <H1> Busqueda </H1>
     </HEAD>
     <BODY>
-     {% if mensaje %}
-             {{mensaje}}
-	    {% if buscado %}
-		    El elemento buscado es: {{buscado}}
+  
+	    {% if nombre_producto %}
+	    {% if enlace %}
+	    {% if monto %}
+		<table style="width:100%">
+		<tr>
+		   <td> Nombre del Producto </td>
+		   <td> Precio </td>
+		   <td> Tienda </td>
+		   <td> Enlace </td>
+		 </tr>
+		 <tr>
+		    <td>  {{nombre_producto}} </td>
+			<td> {{monto}} </td>
+			<td> Mercado Libre </td>
+			
+			
+			<td> {{enlace}} </td>
+		 </tr>
+			
+			
+			
+		</table>
+		{% endif %}
         {% endif %}
-	  {% endif %}
+		{% endif %}
+	
     </BODY>
 </HTML>
