@@ -4,7 +4,6 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
-from models import *
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.cache import never_cache
@@ -16,5 +15,13 @@ from django.db import DatabaseError
 
 # Create your views here.
 
+@csrf_protect
 def index(request):
     return render_to_response('stores/home.html')
+
+
+def buscar(request):
+       if request.POST:
+	       elemento = request.POST["nombre"]
+       return render_to_response('stores/buscar.html',{'mensaje':'busqueda realizada','buscado':elemento,},context_instance=RequestContext(request))
+	
