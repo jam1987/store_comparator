@@ -9,7 +9,7 @@ from django.conf import settings
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'store_comparator.settings')
 
-app = Celery('store_comparator')
+app = Celery('store_comparator', backend='amqp',broker='amqp://')
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.

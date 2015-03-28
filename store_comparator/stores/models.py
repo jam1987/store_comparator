@@ -15,7 +15,8 @@ class Tienda(models.Model):
 class Vende_Producto(models.Model):
     idTienda = models.ForeignKey(Tienda)
     idProducto = models.ForeignKey(Producto)
-    precio = models.CharField(max_length=200)       
+    precio = models.CharField(max_length=200) 
+    direccion = models.URLField(max_length=200000)	
     
     class Meta:
         unique_together = (("idTienda","idProducto"),)

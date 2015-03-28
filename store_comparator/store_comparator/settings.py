@@ -26,7 +26,9 @@ BROKER_URL = 'django://'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+CELERY_IMPORTS = ("tasks", )
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+CELERYD_CONCURRENCY = 20
 
 
 # Quick-start development settings - unsuitable for production

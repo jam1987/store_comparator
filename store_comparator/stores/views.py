@@ -10,12 +10,13 @@ from django.views.decorators.cache import never_cache
 from django.contrib.sites.models import Site
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from stores.models import Tienda, Vende_Producto
 from django.db import IntegrityError
 from django.db import DatabaseError
 import requests
 import urllib
 from bs4 import BeautifulSoup
-
+from tasks import add, mul, xsum, buscar
 # Create your views here.
 
 @csrf_protect
@@ -23,24 +24,24 @@ def index(request):
     return render_to_response('stores/home.html')
 
 
-def buscar(request):
+def recibir_parametro(request):
        if request.POST:
            elemento = request.POST["nombre"]
-           web = "http://listado.mercadolibre.com.co/"+elemento
-           direccion = ''.join(web)
-           informacion = requests.get(direccion)
-           scrapping = BeautifulSoup(informacion.text)
-           info_producto = scrapping.find(id="searchResults")
-           contenido = info_producto.a 
-           enlace = contenido["href"]
-           nombre = ''
-           for elem in contenido.contents:
-               nombre = nombre + str(elem) 
-           nombre_producto_old1 = ''.join(nombre)
-           nombre_producto_old = nombre_producto_old1.replace("<strong>","")
-           nombre_producto = nombre_producto_old.replace("</strong>","")
-           monto_texto = info_producto.div 	
-           monto_1 = monto_texto.div
-           monto = str(monto_1.strong.contents[0])
-       return render_to_response('stores/buscar.html',{'mensaje':'busqueda realizada','enlace':enlace,'nombre_producto':nombre_producto,'monto':monto},context_instance=RequestContext(request))
+           tiendas = get_object_or_404(Tienda,idTienda ='LN01')
+           result = buscar(elemento,tiendas)
+           tiendas = get_object_or_404(Tienda,idTienda ='ML01')
+           result = buscar(elemento,tiendas)
+           tiendas = get_object_or_404(Tienda,idTienda ='EX01')
+           result = buscar(elemento,tiendas)
+           
+       ventas = Vende_Producto.objects.all().order_by('-precio')
+       
+       producto = []
+       i = 0
+     
+           
+  
+       return render_to_response('stores/buscar.html',{'mensaje':'busqueda realizada','ventas':ventas,},context_instance=RequestContext(request))
+	   
+
 	

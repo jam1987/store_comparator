@@ -5,10 +5,8 @@
        <H1> Busqueda </H1>
     </HEAD>
     <BODY>
-  
-	    {% if nombre_producto %}
-	    {% if enlace %}
-	    {% if monto %}
+        
+	    
 		<table style="width:100%">
 		<tr>
 		   <td> Nombre del Producto </td>
@@ -16,21 +14,20 @@
 		   <td> Tienda </td>
 		   <td> Enlace </td>
 		 </tr>
+		 {% for venta in ventas %}
 		 <tr>
-		    <td>  {{nombre_producto}} </td>
-			<td> {{monto}} </td>
-			<td> Mercado Libre </td>
+		    <td>  {{venta.idProducto.nombreProducto}} </td>
+			<td> {{venta.precio}} </td>
+			<td> {{venta.idTienda.nombreTienda}} </td>
+		  <br>
 			
-			
-			<td> {{enlace}} </td>
+			<td>  </td>
 		 </tr>
 			
-			
+		
 			
 		</table>
-		{% endif %}
-        {% endif %}
-		{% endif %}
-	
+		
+	    {% endfor %}
     </BODY>
 </HTML>
