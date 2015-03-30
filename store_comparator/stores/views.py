@@ -17,6 +17,7 @@ import requests
 import urllib
 from bs4 import BeautifulSoup
 from tasks import add, mul, xsum, buscar
+import gevent
 # Create your views here.
 
 @csrf_protect
@@ -28,11 +29,16 @@ def recibir_parametro(request):
        if request.POST:
            elemento = request.POST["nombre"]
            tiendas = get_object_or_404(Tienda,idTienda ='LN01')
-           result = buscar(elemento,tiendas)
+           tupla1 = (elemento,tiendas.nombreTienda,tiendas.direccion)
            tiendas = get_object_or_404(Tienda,idTienda ='ML01')
-           result = buscar(elemento,tiendas)
+           tupla2 = (elemento,tiendas.nombreTienda,tiendas.direccion)
+           tiendas = get_object_or_404(Tienda,idTienda ='ML01')
+           tupla3 = (elemento,tiendas.nombreTienda,tiendas.direccion)
            tiendas = get_object_or_404(Tienda,idTienda ='EX01')
-           result = buscar(elemento,tiendas)
+           tupla4 = (elemento,tiendas.nombreTienda,tiendas.direccion)
+           tuplas = [tupla1,tupla2,tupla3,tupla4]
+           jobs = [gevent.spawn(buscar.delay,tupla) for tupla in tuplas]
+           gevent.joinall(jobs)
            
        ventas = Vende_Producto.objects.all().order_by('-precio')
        

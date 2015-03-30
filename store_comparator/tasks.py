@@ -17,6 +17,7 @@ from django.db import DatabaseError
 import requests
 from bs4 import BeautifulSoup
 from store_comparator.celery import app
+import socket
 
 
 @app.task
@@ -29,16 +30,16 @@ def mul(x, y):
     return x * y
 
 @app.task
-def buscar(elemento, tienda):
+def buscar(tupla):
     info = ()
-    if tienda.nombreTienda == 'Mercado Libre':
-       info = get_info_m_l(tienda.direccion,elemento)
-    elif tienda.nombreTienda == 'ÓLX':
-       info = get_info_olx(tienda.direccion,elemento)
-    elif tienda.nombreTienda == 'Linio':
-       info = get_info_linio(tienda.direccion,elemento)
-    elif tienda.nombreTienda == 'Exito':
-       info = get_info_exito(tienda.direccion,elemento)
+    if tupla[1] == 'Mercado Libre':
+       info = get_info_m_l(tupla[2],tupla[0])
+    elif tupla[1] == 'ÓLX':
+       info = get_info_olx(tupla[2],tupla[0])
+    elif tupla[1] == 'Linio':
+       info = get_info_linio(tupla[2],tupla[0])
+    elif tupla[1] == 'Exito':
+       info = get_info_exito(tupla[2],tupla[0])
 		
     try:
         prod = Producto.objects.create(
@@ -48,6 +49,7 @@ def buscar(elemento, tienda):
 	    )
         prod.save()	
         
+        tienda = get_object_or_404(Tienda,nombreTienda=tupla[1])
         vende = Vende_Producto.objects.create(
             idProducto = prod,
             idTienda = tienda,
@@ -55,6 +57,7 @@ def buscar(elemento, tienda):
 		    direccion = info[3]
         )
         vende.save()
+   
     except IntegrityError:
         transaction.rollback()
         return 1
