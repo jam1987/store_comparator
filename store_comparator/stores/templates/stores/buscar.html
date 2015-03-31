@@ -2,47 +2,54 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <HTML>
     <HEAD>
-       <H1> Busqueda </H1>
-	   <script src="//js.pusher.com/2.2/pusher.min.js" type="text/javascript"></script>
-  <script type="text/javascript">
+       <H1> Un Momento por favor ... </H1>
+	  
+   <script src="//js.pusher.com/2.2/pusher.min.js" type="text/javascript"></script>
+         <script type="text/javascript">
     // Enable pusher logging - don't include this in production
-    Pusher.log = function(message) {
-      if (window.console && window.console.log) {
-        window.console.log(message);
-      }
-    };
-
+   
+    
     var pusher = new Pusher('8ab69fb95f1656821b78');
     var channel = pusher.subscribe('test_channel');
-    channel.bind('my_event', function(data) {
-      alert(data.message);
+	
+	 
+     channel.bind('my_event', function(data) {
+	  
+	   
+      document.write(data.message);
+	  document.write("</br>");
+	  document.write("</br>");
+	  document.write(data.message1);
+	  document.write("</br>");
+	  document.write("</br>");
+	  document.write(data.message2);
+	  document.write("</br>");
+	  document.write("</br>");
+	  document.write(data.message3);
+	  document.write("</br>");
+	  document.write("</br>");
+	    document.write("_______________________________________________________________________________________________");
+		document.write("</br>");
+	  newlink = document.createElement('a');
+	  newlink.setAttribute('class','signature');
+	  newlink.setAttribute('href','/stores/compartir/');
+	 
+    }); 
+	channel.bind('my_event', function(data) {
+	  
+
+	  newlink = document.createElement('a');
+	  newlink.setAttribute('class','signature');
+	  newlink.setAttribute('href','/stores/compartir/');
+	 
     });
+	
+
+	
   </script>
+  
     </HEAD>
     <BODY>
-        
-	    
-		<table style="width:100%">
-		<tr>
-		   <td> Nombre del Producto </td>
-		   <td> Precio </td>
-		   <td> Tienda </td>
-		   <td> Enlace </td>
-		 </tr>
-		 {% for venta in ventas %}
-		 <tr>
-		    <td>  {{venta.idProducto.nombreProducto}} </td>
-			<td> {{venta.precio}} </td>
-			<td> {{venta.idTienda.nombreTienda}} </td>
-		  <br>
-			
-			<td>  </td>
-		 </tr>
-			
-		
-			
-		</table>
-		
-	    {% endfor %}
+	 <a class="signature" href="stores/compartir/"> Compartir Informacion </a>
     </BODY>
 </HTML>

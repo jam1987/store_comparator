@@ -10,7 +10,7 @@ from django.views.decorators.cache import never_cache
 from django.contrib.sites.models import Site
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from stores.models import Tienda, Vende_Producto
+from stores.models import Tienda, Vende_Producto, Producto
 from django.db import IntegrityError
 from django.db import DatabaseError
 import requests
@@ -26,28 +26,32 @@ def index(request):
 
 
 def recibir_parametro(request):
+       
        if request.POST:
            elemento = request.POST["nombre"]
            tiendas = get_object_or_404(Tienda,idTienda ='LN01')
            tupla1 = (elemento,tiendas.nombreTienda,tiendas.direccion)
            tiendas = get_object_or_404(Tienda,idTienda ='ML01')
            tupla2 = (elemento,tiendas.nombreTienda,tiendas.direccion)
-           tiendas = get_object_or_404(Tienda,idTienda ='ML01')
+           tiendas = get_object_or_404(Tienda,idTienda ='OL01')
+           
            tupla3 = (elemento,tiendas.nombreTienda,tiendas.direccion)
            tiendas = get_object_or_404(Tienda,idTienda ='EX01')
-           tupla4 = (elemento,tiendas.nombreTienda,tiendas.direccion)
+           tupla4 = (elemento,tiendas.nombreTienda,tiendas.direccion,'X')
+		
            tuplas = [tupla1,tupla2,tupla3,tupla4]
            jobs = [gevent.spawn(buscar.delay,tupla) for tupla in tuplas]
-           gevent.joinall(jobs)
-           
-       ventas = Vende_Producto.objects.all().order_by('-precio')
+           gevent.joinall(jobs,timeout=20)
+           ventas = Vende_Producto.objects.all().order_by('-precio')
+		
        
-       producto = []
-       i = 0
+
      
            
   
        return render_to_response('stores/buscar.html',{'mensaje':'busqueda realizada','ventas':ventas,},context_instance=RequestContext(request))
 	   
 
-	
+def compartir(request):
+    ventas = Vende_Producto.objects.all().order_by('-precio')
+    return render_to_response('stores/compartir.html',{'mensaje':'busqueda realizada','ventas':ventas,},context_instance=RequestContext(request))

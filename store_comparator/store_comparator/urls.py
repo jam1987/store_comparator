@@ -8,5 +8,6 @@ urlpatterns = patterns('',
     url(r'index/','stores.views.index'),
 	url(r'recibir_parametro/', 'stores.views.recibir_parametro'),
 	url(r'mostrar_resultados/','stores.views.recibir_parametro'),
+	url(r'compartir/','stores.views.compartir'),
     url(r'^admin/', include(admin.site.urls)),
 )

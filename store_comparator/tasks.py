@@ -15,6 +15,7 @@ from django.db import transaction
 from django.db import IntegrityError
 from django.db import DatabaseError
 import requests
+import pusher
 from bs4 import BeautifulSoup
 from store_comparator.celery import app
 import socket
@@ -34,7 +35,7 @@ def buscar(tupla):
     info = ()
     if tupla[1] == 'Mercado Libre':
        info = get_info_m_l(tupla[2],tupla[0])
-    elif tupla[1] == 'ÓLX':
+    elif tupla[1] == 'OLX':
        info = get_info_olx(tupla[2],tupla[0])
     elif tupla[1] == 'Linio':
        info = get_info_linio(tupla[2],tupla[0])
@@ -54,9 +55,19 @@ def buscar(tupla):
             idProducto = prod,
             idTienda = tienda,
             precio = info[2],
-		    direccion = info[3]
+		    direccion = info[0]
         )
         vende.save()
+        p = pusher.Pusher(
+            app_id='113190',
+            key='8ab69fb95f1656821b78',
+            secret='7d2e9bf083500c9b00de'
+        )
+        nombre = prod.nombreProducto
+        precio = vende.precio
+        nombreTienda = tienda.nombreTienda
+        direccion = vende.direccion
+        p['test_channel'].trigger('my_event', {'message': nombre, 'message1':precio,'message2':nombreTienda, 'message3':direccion})
    
     except IntegrityError:
         transaction.rollback()
@@ -67,26 +78,32 @@ def get_info_m_l(direccion,elemento):
     web = direccion+elemento
     direccion = ''.join(web)
     informacion = requests.get(direccion)
-    scrapping = BeautifulSoup(informacion.text)
-    info_producto = scrapping.find(id="searchResults")
-    contenido = info_producto.a 
-    enlace = contenido["href"]
-    nombre = ''
-    nombre_producto = ''
-    monto = ''
-    id = ''
-    for elem in contenido.contents:
-        nombre = nombre + str(elem) 
-        nombre_producto_old1 = ''.join(nombre)
-        nombre_producto_old = nombre_producto_old1.replace("<strong>","")
-        nombre_producto = nombre_producto_old.replace("</strong>","")
-        monto_texto = info_producto.div 	
-        monto_1 = monto_texto.div
-        monto = str(monto_1.strong.contents[0])
-        i=0
-        id =  nombre_producto[0:2]+str(i)
-        i = i + 1
-        id = ''.join(id)	
+    if informacion.status_code == 200:
+        scrapping = BeautifulSoup(informacion.text)
+        info_producto = scrapping.find(id="searchResults")
+        contenido = info_producto.a 
+        enlace = contenido["href"]
+        nombre = ''
+        nombre_producto = ''
+        monto = ''
+        id = ''
+        for elem in contenido.contents:
+            nombre = nombre + str(elem) 
+            nombre_producto_old1 = ''.join(nombre)
+            nombre_producto_old = nombre_producto_old1.replace("<strong>","")
+            nombre_producto = nombre_producto_old.replace("</strong>","")
+            monto_texto = info_producto.div 	
+            monto_1 = monto_texto.div
+            monto = str(monto_1.strong.contents[0])
+            i=0
+            id =  nombre_producto[0:2]+str(i)
+            i = i + 1
+            id = ''.join(id)	
+    else:
+        nombre_producto = elemento
+        id = nombre_producto[0:2]
+        monto = "Fallo"
+        enlace = ""
     return (enlace,nombre_producto,monto,id)		
 
 def get_info_linio(direccion,elemento):
@@ -96,53 +113,91 @@ def get_info_linio(direccion,elemento):
     scrapping = BeautifulSoup(informacion.text)
     info_producto = scrapping.find(id="catalog-content")
     contenido = info_producto.a 
+    monto = ""
+    id = ""
     enlace = contenido["href"]
     nombre_producto = contenido["title"]
-    monto = contenido.li.find_next("li").find_next("li").find_next("li").span.find_next("span").contents[0]
-    i = 1
-    id = nombre_producto[0:2]+str(i)
+    monto_aux = contenido.li.find_next("li").find_next("li").find_next("li").span.find_next("span")
+    if len(monto_aux.contents) > 0:
+        monto = monto_aux.contents[0]
+    else:
+        monto = "Fallo"
+        i = 1
+        id = nombre_producto[0:2]+str(i)
+    # else:
+        # nombre_producto = elemento
+        # monto = "Fallo"
+        # i = 1
+        # id = nombre_producto[0:2]+str(i)
+        # enlace = ""
+		
     return (enlace,nombre_producto,monto,id)
 
 def get_info_olx(direccion,elemento):
-    # web = tienda.direccion+elemento
-    # direccion = ''.join(web)
-    # informacion = requests.get(direccion)
-    # scrapping = BeautifulSoup(informacion.text)
-    # info_producto = scrapping.find(id="searchResults")
-    # contenido = info_producto.a 
-    # enlace = contenido["href"]
-    # nombre = ''
-	# nombre_producto = ''
-	# monto = ''
-	# id = ''
-    # for elem in contenido.contents:
-        # nombre = nombre + str(elem) 
-        # nombre_producto_old1 = ''.join(nombre)
-        # nombre_producto_old = nombre_producto_old1.replace("<strong>","")
-        # nombre_producto = nombre_producto_old.replace("</strong>","")
-        # monto_texto = info_producto.div 	
-        # monto_1 = monto_texto.div
-        # monto = str(monto_1.strong.contents[0])
-        # i=0
-        # id =  nombre_producto[0:2]+str(i)
-        # i = i + 1
-        # id = ''.join(id)	
-    return ()
+    headers = {'Accept': '*/*',
+       'Accept-Encoding': 'gzip, deflate',
+       'Accept-Language': 'es-ES,es;q=0.8,en;q=0.6',
+       'Connection': 'keep-alive',
+       'Content-Type': 'text/html',
+       'Origin': 'http://olx.com.co',
+       'Referer': 'http://olx.com.co',
+       'User-Agent': 'Mozilla/5.0  (Windows; U; Windows NT 6.1; en-US) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36'}
+    web = direccion+elemento
+    direccion = ''.join(web)
+    informacion = requests.get(direccion)
+    if informacion.status_code == 200:
+        scrapping = BeautifulSoup(informacion.text)
+        info_producto = scrapping.find(id="searchResults")
+        contenido = info_producto.a 
+        enlace = contenido["href"]
+        nombre = ''
+        nombre_producto = ''
+        monto = ''
+        id = ''
+        for elem in contenido.contents:
+            nombre = nombre + str(elem) 
+            nombre_producto_old1 = ''.join(nombre)
+            nombre_producto_old = nombre_producto_old1.replace("<strong>","")
+            nombre_producto = nombre_producto_old.replace("</strong>","")
+            monto_texto = info_producto.div 	
+            monto_1 = monto_texto.div
+            monto = str(monto_1.strong.contents[0])
+            i=3
+            id =  nombre_producto[0:2]+str(i)
+            id = ''.join(id)	
+    else:
+        nombre_producto = elemento
+        monto = "Fallo"
+        enlace = ""
+        i=3
+        id =  nombre_producto[0:2]+str(i)
+        id = ''.join(id)
+		
+    return (nombre_producto,monto,enlace,id)
 
 def get_info_exito(direccion,elemento):
     web = direccion+elemento
     direccion = ''.join(web)
     informacion = requests.get(direccion)
-    scrapping = BeautifulSoup(informacion.text)
-    info_producto = scrapping.find(id="plpContent")
-    contenido = info_producto.div
-    enlace = "www.exito.com/"+info_producto.a["href"]
-    enlace = ''.join(enlace)
-    nombre_producto = contenido.h2.contents[0]
-    monto = contenido.h4.contents[0].replace("\n\t\t\t\t\t\t","")
-    i = 2
-    id = nombre_producto[0:2]+str(i)
-    id = ''.join(id)	
+    datos = BeautifulSoup(informacion.text)
+    info_producto = datos.find(id="plpContent")
+    if  info_producto is None:       
+        nombre_producto = elemento
+        precio = "Fallo"
+        enlace = ""
+        i = 2
+        id = nombre_producto[0:2]+str(i)
+        id = ''.join(id)
+    else:
+         contenido = info_producto.div
+         enlace = "www.exito.com/"+info_producto.a["href"]
+         enlace = ''.join(enlace)
+         nombre_producto = contenido.h2.contents[0]
+         monto = contenido.h4.contents[0].replace("\n\t\t\t\t\t\t","")
+         i = 2
+         id = nombre_producto[0:2]+str(i)
+         id = ''.join(id)
+        
     return (enlace,nombre_producto,monto,id)
 		
 @app.task
