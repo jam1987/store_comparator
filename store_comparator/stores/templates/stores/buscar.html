@@ -1,8 +1,37 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <HTML>
-    <HEAD>
-       <H1> Un Momento por favor ... </H1>
+        <style type="text/css">
+    header {
+        background-color:black;
+    display:block;
+	text-align:center;
+    overflow:hidden;
+    }
+	
+	input
+{
+   
+   text-align : center;
+   border: 0px solid;
+   height:25px;
+   width:235px;
+}
+
+.texbox {
+border-color : black;
+}
+
+form 
+{
+text-align : center;
+align: center;
+}
+
+   
+</style>
+    <header>
+       <H1><font color="white"> Un Momento por favor ... </font></H1>
 	  
    <script src="//js.pusher.com/2.2/pusher.min.js" type="text/javascript"></script>
          <script type="text/javascript">
@@ -30,26 +59,16 @@
 	  document.write("</br>");
 	    document.write("_______________________________________________________________________________________________");
 		document.write("</br>");
-	  newlink = document.createElement('a');
-	  newlink.setAttribute('class','signature');
-	  newlink.setAttribute('href','/stores/compartir/');
+
 	 
     }); 
-	channel.bind('my_event', function(data) {
-	  
 
-	  newlink = document.createElement('a');
-	  newlink.setAttribute('class','signature');
-	  newlink.setAttribute('href','/stores/compartir/');
-	 
-    });
 	
 
 	
   </script>
   
-    </HEAD>
+    </header>
     <BODY>
-	 <a class="signature" href="stores/compartir/"> Compartir Informacion </a>
     </BODY>
 </HTML>

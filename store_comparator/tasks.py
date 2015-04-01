@@ -1,3 +1,10 @@
+# Nombre del Archivo:  tasks.py
+# Descripcion del Archivo: Este archivo contiene los metodos que se van a aplicar
+#                          de manera concurrente.
+# Version: 1.0
+# Autor: Julio De Abreu Molina
+# Fecha de Finalizacion: 31 de Marzo del 2014
+
 from __future__ import absolute_import
 from django.shortcuts import render
 from stores.models import *
@@ -21,15 +28,16 @@ from store_comparator.celery import app
 import socket
 
 
-@app.task
-def add(x, y):
-    return x + y
-
-
-@app.task
-def mul(x, y):
-    return x * y
-
+# Nombre de la Funcion: Buscar
+# Parametros de entrada: Tupla - Corresponde a una 3-tupla la cual contie-
+#                        ne la siguiente informacion:
+#                        1) El elemento a buscar
+#                        2) El nombre de la Tienda
+#                        3) La direccion Web de la tienda 
+# Parametros de salida: 1 o 0. Sin embargo la funcion envia los resultados
+#                       a traves de la interfaz de Pusher y HTTP de Python.
+# Descripcion: Esta funcion se encarga de realizar la busqueda de la infor-
+#              macion del producto.
 @app.task
 def buscar(tupla):
     info = ()
@@ -42,9 +50,10 @@ def buscar(tupla):
     elif tupla[1] == 'Exito':
        info = get_info_exito(tupla[2],tupla[0])
 		
-    try:
+    try: 
+	
+	    # Se crean dos objetos: Producto y Vende_Producto
         prod = Producto.objects.create(
-		    
 		    idProducto = info[3],
 			nombreProducto = info[1]
 	    )
@@ -58,6 +67,8 @@ def buscar(tupla):
 		    direccion = info[0]
         )
         vende.save()
+		
+		# Se crea la instancia Pusher 
         p = pusher.Pusher(
             app_id='113190',
             key='8ab69fb95f1656821b78',
@@ -67,6 +78,8 @@ def buscar(tupla):
         precio = vende.precio
         nombreTienda = tienda.nombreTienda
         direccion = vende.direccion
+		
+		# Se envian los datos
         p['test_channel'].trigger('my_event', {'message': nombre, 'message1':precio,'message2':nombreTienda, 'message3':direccion})
    
     except IntegrityError:
@@ -74,6 +87,23 @@ def buscar(tupla):
         return 1
     return 0
 	
+
+# Nombre de la Funcion: Get_info_m_l
+# Parametros de entrada: - Direccion: Corresponde a la URL de Mercado Libre
+#                        - Elemento: Corresponde al producto
+# Parametros de salida: Tupla - Corresponde a una 4-tupla la cual contiene 
+#                       la siguiente informacion:
+#                       1) Enlace: Corresponde al enlace del sitio web con 
+#                                  informacion del producto
+#                       2) nombre_producto: Nombre del producto en el sitio
+#                                           Web
+#                       3) Monto: Corresponde al precio del producto en la 
+#                                 tienda
+#                       4) Id: Identificador creado para el producto
+# Descripcion: Esta funcion se encarga de realizar la busqueda de la infor-
+#              macion del producto en Mercado Libre. Para eso se realiza 
+#              el request y luego el Scrapping a traves de BeautifulSoup
+#              para obtener los datos 
 def get_info_m_l(direccion,elemento):
     web = direccion+elemento
     direccion = ''.join(web)
@@ -104,35 +134,69 @@ def get_info_m_l(direccion,elemento):
         id = nombre_producto[0:2]
         monto = "Fallo"
         enlace = ""
-    return (enlace,nombre_producto,monto,id)		
+    return (enlace,nombre_producto,monto,id)	
 
+	
+# Nombre de la Funcion: Get_info_linio
+# Parametros de entrada: - Direccion: Corresponde a la URL de Linio
+#                        - Elemento: Corresponde al producto
+# Parametros de salida: Tupla - Corresponde a una 4-tupla la cual contiene 
+#                       la siguiente informacion:
+#                       1) Enlace: Corresponde al enlace del sitio web con 
+#                                  informacion del producto
+#                       2) nombre_producto: Nombre del producto en el sitio
+#                                           Web
+#                       3) Monto: Corresponde al precio del producto en la 
+#                                 tienda
+#                       4) Id: Identificador creado para el producto
+# Descripcion: Esta funcion se encarga de realizar la busqueda de la infor-
+#              macion del producto en Linio. Para eso se realiza 
+#              el request y luego el Scrapping a traves de BeautifulSoup
+#              para obtener los datos 
 def get_info_linio(direccion,elemento):
     web = direccion+elemento
     direccion = ''.join(web)
     informacion = requests.get(direccion)
     scrapping = BeautifulSoup(informacion.text)
-    info_producto = scrapping.find(id="catalog-content")
-    contenido = info_producto.a 
-    monto = ""
-    id = ""
-    enlace = contenido["href"]
-    nombre_producto = contenido["title"]
-    monto_aux = contenido.li.find_next("li").find_next("li").find_next("li").span.find_next("span")
-    if len(monto_aux.contents) > 0:
-        monto = monto_aux.contents[0]
-    else:
-        monto = "Fallo"
+    not_found = scrapping.find(id="not-found-container")
+    if not_found is None:
+        info_producto = scrapping.find(id="catalog-content")
+        contenido = info_producto.a 
+        monto = ""
+        id = ""
+        enlace = contenido["href"]
+        nombre_producto = contenido["title"]
+        monto_aux = contenido.li.find_next("li").find_next("li").find_next("li").span.find_next("span")
+        if len(monto_aux.contents) > 0:
+            monto = monto_aux.contents[0]
+        else:
+             monto = "Fallo"
+             i = 1
+             nombre_producto = elemento
+             id = nombre_producto[0:2]+str(i)	
+    else:	
+        monto = "No Encontrado"
         i = 1
-        id = nombre_producto[0:2]+str(i)
-    # else:
-        # nombre_producto = elemento
-        # monto = "Fallo"
-        # i = 1
-        # id = nombre_producto[0:2]+str(i)
-        # enlace = ""
-		
+        nombre_producto = elemento
+        id = nombre_producto[0:2]+str(i)	
     return (enlace,nombre_producto,monto,id)
 
+# Nombre de la Funcion: Get_info_olx
+# Parametros de entrada: - Direccion: Corresponde a la URL de OLX
+#                        - Elemento: Corresponde al producto
+# Parametros de salida: Tupla - Corresponde a una 4-tupla la cual contiene 
+#                       la siguiente informacion:
+#                       1) Enlace: Corresponde al enlace del sitio web con 
+#                                  informacion del producto
+#                       2) nombre_producto: Nombre del producto en el sitio
+#                                           Web
+#                       3) Monto: Corresponde al precio del producto en la 
+#                                 tienda
+#                       4) Id: Identificador creado para el producto
+# Descripcion: Esta funcion se encarga de realizar la busqueda de la infor-
+#              macion del producto en OLX. Para eso se realiza 
+#              el request y luego el Scrapping a traves de BeautifulSoup
+#              para obtener los datos 
 def get_info_olx(direccion,elemento):
     headers = {'Accept': '*/*',
        'Accept-Encoding': 'gzip, deflate',
@@ -173,17 +237,35 @@ def get_info_olx(direccion,elemento):
         id =  nombre_producto[0:2]+str(i)
         id = ''.join(id)
 		
-    return (nombre_producto,monto,enlace,id)
+    return (enlace,nombre_producto,monto,id)
 
+# Nombre de la Funcion: Get_info_exito
+# Parametros de entrada: - Direccion: Corresponde a la URL de Exito
+#                        - Elemento: Corresponde al producto
+# Parametros de salida: Tupla - Corresponde a una 4-tupla la cual contiene 
+#                       la siguiente informacion:
+#                       1) Enlace: Corresponde al enlace del sitio web con 
+#                                  informacion del producto
+#                       2) nombre_producto: Nombre del producto en el sitio
+#                                           Web
+#                       3) Monto: Corresponde al precio del producto en la 
+#                                 tienda
+#                       4) Id: Identificador creado para el producto
+# Descripcion: Esta funcion se encarga de realizar la busqueda de la infor-
+#              macion del producto en Exito. Para eso se realiza 
+#              el request y luego el Scrapping a traves de BeautifulSoup
+#              para obtener los datos 
 def get_info_exito(direccion,elemento):
     web = direccion+elemento
     direccion = ''.join(web)
     informacion = requests.get(direccion)
     datos = BeautifulSoup(informacion.text)
+    monto = ""
     info_producto = datos.find(id="plpContent")
+	
     if  info_producto is None:       
         nombre_producto = elemento
-        precio = "Fallo"
+        monto = "Fallo"
         enlace = ""
         i = 2
         id = nombre_producto[0:2]+str(i)
