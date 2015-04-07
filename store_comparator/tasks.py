@@ -118,17 +118,17 @@ def get_info_m_l(direccion,elemento):
         monto = ''
         id = ''
         for elem in contenido.contents:
-            nombre = nombre + str(elem) 
+            nombre = nombre + elem.encode('utf-8') 
             nombre_producto_old1 = ''.join(nombre)
             nombre_producto_old = nombre_producto_old1.replace("<strong>","")
             nombre_producto = nombre_producto_old.replace("</strong>","")
-            monto_texto = info_producto.div 	
-            monto_1 = monto_texto.div
-            monto = str(monto_1.strong.contents[0])
-            i=0
-            id =  nombre_producto[0:2]+str(i)
-            i = i + 1
-            id = ''.join(id)	
+        monto_texto = info_producto.div 	
+        monto_1 = monto_texto.div
+        monto = (monto_1.strong.contents[0].encode('utf-8')).replace("$\xc2\xa0","")
+        i=0
+        id =  nombre_producto[0:2]+str(i)
+        i = i + 1
+        id = ''.join(id)	
     else:
         nombre_producto = elemento
         id = nombre_producto[0:2]
@@ -156,6 +156,7 @@ def get_info_m_l(direccion,elemento):
 def get_info_linio(direccion,elemento):
     web = direccion+elemento
     direccion = ''.join(web)
+    enlace = ""
     informacion = requests.get(direccion)
     scrapping = BeautifulSoup(informacion.text)
     not_found = scrapping.find(id="not-found-container")
@@ -198,45 +199,30 @@ def get_info_linio(direccion,elemento):
 #              el request y luego el Scrapping a traves de BeautifulSoup
 #              para obtener los datos 
 def get_info_olx(direccion,elemento):
-    headers = {'Accept': '*/*',
-       'Accept-Encoding': 'gzip, deflate',
-       'Accept-Language': 'es-ES,es;q=0.8,en;q=0.6',
-       'Connection': 'keep-alive',
-       'Content-Type': 'text/html',
-       'Origin': 'http://olx.com.co',
-       'Referer': 'http://olx.com.co',
-       'User-Agent': 'Mozilla/5.0  (Windows; U; Windows NT 6.1; en-US) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36'}
+    header = {'Accept': '*/*',
+ 'Accept-Encoding': 'gzip, deflate',
+ 'Accept-Language': 'es-ES,es;q=0.8,en;q=0.6',
+ 'Connection': 'keep-alive',
+ 'Content-Type': 'text/html',
+ 'Origin': 'http://olx.com.co',
+ 'Referer': 'http://olx.com.co',
+ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36'}
     web = direccion+elemento
     direccion = ''.join(web)
-    informacion = requests.get(direccion)
-    if informacion.status_code == 200:
-        scrapping = BeautifulSoup(informacion.text)
-        info_producto = scrapping.find(id="searchResults")
-        contenido = info_producto.a 
-        enlace = contenido["href"]
-        nombre = ''
-        nombre_producto = ''
-        monto = ''
-        id = ''
-        for elem in contenido.contents:
-            nombre = nombre + str(elem) 
-            nombre_producto_old1 = ''.join(nombre)
-            nombre_producto_old = nombre_producto_old1.replace("<strong>","")
-            nombre_producto = nombre_producto_old.replace("</strong>","")
-            monto_texto = info_producto.div 	
-            monto_1 = monto_texto.div
-            monto = str(monto_1.strong.contents[0])
-            i=3
-            id =  nombre_producto[0:2]+str(i)
-            id = ''.join(id)	
-    else:
-        nombre_producto = elemento
-        monto = "Fallo"
-        enlace = ""
-        i=3
-        id =  nombre_producto[0:2]+str(i)
-        id = ''.join(id)
-		
+    informacion = requests.get(direccion,headers=header)
+    
+    
+    scrapping = BeautifulSoup(informacion.text)
+    info_producto = scrapping.find(id="listing-items")
+    enlace = ""
+    contenido = info_producto.find_next("ul").find_next("ul").find_next("ul").find_next("ul").find_next("ul")
+    enlace = contenido.li.a["href"]
+    nombre_producto = str(contenido.li.h3.contents[0])
+    monto = (str(contenido.li.p.contents[0]).replace(" ","")).replace("\n","")
+    id = ''
+    i=3
+    id =  nombre_producto[0:2]+str(i)
+    id = ''.join(id)	
     return (enlace,nombre_producto,monto,id)
 
 # Nombre de la Funcion: Get_info_exito

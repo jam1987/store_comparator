@@ -40,11 +40,11 @@ align: center;
     
     var pusher = new Pusher('8ab69fb95f1656821b78');
     var channel = pusher.subscribe('test_channel');
-	
-	 
+    var i = 1 
+	  document.write("<header>  Busqueda Realizada </header>"); 
      channel.bind('my_event', function(data) {
-	  
-	   
+      alert(i);
+      i = i + 1;
       document.write(data.message);
 	  document.write("</br>");
 	  document.write("</br>");
@@ -59,16 +59,21 @@ align: center;
 	  document.write("</br>");
 	    document.write("_______________________________________________________________________________________________");
 		document.write("</br>");
+		//$('#js-table tr:last').after('<tr><td>Esto es una prueba</td></tr>');
 
 	 
     }); 
 
 	
-
+     
 	
   </script>
   
     </header>
-    <BODY>
+    <BODy>
+    <TABLE ID="js-table">
+    <tbody>
+    </tbody>
+    </table>
     </BODY>
 </HTML>

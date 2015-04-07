@@ -62,7 +62,7 @@ def recibir_parametro(request):
            tiendas = get_object_or_404(Tienda,idTienda ='ML01')
            tupla2 = (elemento,tiendas.nombreTienda,tiendas.direccion)
            tiendas = get_object_or_404(Tienda,idTienda ='OL01')
-           
+           print(tiendas.direccion)         
            tupla3 = (elemento,tiendas.nombreTienda,tiendas.direccion)
            tiendas = get_object_or_404(Tienda,idTienda ='EX01')
            tupla4 = (elemento,tiendas.nombreTienda,tiendas.direccion,'X')

@@ -9,20 +9,12 @@ from django.conf import settings
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'store_comparator.settings')
 
-app = Celery('store_comparator', backend='amqp',broker='amqp://')
+app = Celery('store_comparator',broker='amqp://guest:guest@localhost:5672//')
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.
 app.config_from_object('django.conf:settings')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
-app.conf.update(
-    CELERY_RESULT_BACKEND='djcelery.backends.database:DatabaseBackend',
-)
-app.conf.update(
-    CELERY_RESULT_BACKEND='djcelery.backends.cache:CacheBackend',
-)
-
-
 
 @app.task(bind=True)
 def debug_task(self):

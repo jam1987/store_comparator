@@ -18,8 +18,7 @@ import os
 # for relative imports by default.
 
 # Celery settings
-
-BROKER_URL = 'django://'
+BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 
 #: Only add pickle to this list if your broker is secured
 #: from unwanted access (see userguide/security.html)
