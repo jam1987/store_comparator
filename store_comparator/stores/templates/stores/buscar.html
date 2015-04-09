@@ -41,26 +41,83 @@ align: center;
     var pusher = new Pusher('8ab69fb95f1656821b78');
     var channel = pusher.subscribe('test_channel');
     var i = 1 
+    var tiendas = []
+    var precios = []
+    var enlaces = []
+    var productos = []
+    var imagenes = []
 	  document.write("<header>  Busqueda Realizada </header>"); 
      channel.bind('my_event', function(data) {
       alert(i);
       i = i + 1;
-      document.write(data.message);
-	  document.write("</br>");
-	  document.write("</br>");
-	  document.write(data.message1);
-	  document.write("</br>");
-	  document.write("</br>");
-	  document.write(data.message2);
-	  document.write("</br>");
-	  document.write("</br>");
-	  document.write(data.message3);
-	  document.write("</br>");
-	  document.write("</br>");
-	    document.write("_______________________________________________________________________________________________");
-		document.write("</br>");
+       productos.push(data.message);
+       precios.push(data.message1);
+       tiendas.push(data.message2);
+       enlaces.push(data.message3);
+       imagenes.push(data.message4);
+     // document.write(data.message);
+//	  document.write("</br>");
+//	  document.write("</br>");
+//	  document.write(data.message1);
+//	  document.write("</br>");
+//	  document.write("</br>");
+//	  document.write(data.message2);
+//	  document.write("</br>");
+//	  document.write("</br>");
+//	  document.write(data.message3);
+//	  document.write("</br>");
+//	  document.write("</br>");
+//	    document.write("_______________________________________________________________________________________________");
+//		document.write("</br>");
 		//$('#js-table tr:last').after('<tr><td>Esto es una prueba</td></tr>');
-
+          if (i == 5) {
+            
+             document.write("<html>");
+             var css= document.createElement("style");  
+             css.type = "text/css";
+             css.innerHTML = "header {  color: white; background-color:black; display:block; text-align:center; overflow:hidden; } ";
+             css.innerHTML += "th { color: white; background-color:black; overflow:hidden;}";           
+             document.getElementsByTagName("html")[0].appendChild(css);
+                      
+             document.write("<header> <H1> Informaci&oacute;n Detallada  </H1> </header>");
+             document.write("<body>");
+             document.write("</br>");
+             document.write("</br>");
+             document.write("</br>");
+             document.write("</br>");
+             var counter = 0;
+             
+             document.write("<table border=2>");
+             document.write('<tr>');
+             document.write('<th>  Nombre del producto </th>');
+             document.write('<th>   Precio  </th>');
+             document.write('<th>   Tienda  </th>');
+             document.write('<th>  Enlace (Hacer Clic en la Imagen) </th>');
+             document.write("</tr>");
+             while (counter < 4) {
+                document.write('<tr>');
+                document.write('<td>'+ productos[counter] +'</td>');
+                document.write('<td>'+ precios[counter] +'</td>');
+                if (tiendas[counter]=='OLX') {
+                    document.write('<td> <img src="http://static01.olx-st.com/mobile-webapp/images/desktop/logo.png"> </td>');
+                    
+                } else if(tiendas[counter]=='Mercado Libre') {
+                    document.write('<td><img src="http://www.diariolavoz.net/wp-content/uploads/2013/04/mercado.jpeg" width="72" height="72"></td>');
+               } else if (tiendas[counter]=='Linio') {
+                     document.write('<td> <img src="http://www.luisgyg.com/wp-content/uploads/2013/05/linio-500x298.jpg" height="72">  </td>');
+               } else {
+                    document.write('<td> <img src="http://www.exito.com/redesign/img/dsn/imgLogoExito01.gif"></td>');
+                }
+                document.write('<td>'+imagenes[counter]+'</td>');
+                document.write('</tr>');
+                counter++;
+             }
+             document.write("</table>");
+           
+             
+             document.write("</body>"); 
+             document.write("</html>");
+          } 
 	 
     }); 
 

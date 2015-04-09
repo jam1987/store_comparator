@@ -73,8 +73,8 @@ def recibir_parametro(request):
 		   # en Celery
            jobs = [gevent.spawn(buscar.delay,tupla) for tupla in tuplas]
            gevent.joinall(jobs,timeout=20)
-           ventas = Vende_Producto.objects.all().order_by('-precio')
-       return render_to_response('stores/buscar.html',{'mensaje':'busqueda realizada','ventas':ventas,},context_instance=RequestContext(request))
+           
+       return render_to_response('stores/buscar.html',{'mensaje':'busqueda realizada',},context_instance=RequestContext(request))
 	   
 # Nombre del Metodo: Compartir
 # Parametros de Entrada: Request - Corresponde a los datos de

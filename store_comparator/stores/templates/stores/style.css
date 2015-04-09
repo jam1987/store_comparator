@@ -1,0 +1,25 @@
+  header {
+        background-color:black;
+    display:block;
+        text-align:center;
+    overflow:hidden;
+    }
+
+        input
+{
+
+   text-align : center;
+   border: 0px solid;
+   height:25px;
+   width:235px;
+}
+
+.texbox {
+border-color : black;
+}
+
+form
+{
+text-align : center;
+align: center;
+}

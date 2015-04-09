@@ -17,6 +17,6 @@ class Vende_Producto(models.Model):
     idProducto = models.ForeignKey(Producto)
     precio = models.CharField(max_length=200) 
     direccion = models.URLField(max_length=200000)	
-    
+    imagen = models.URLField(max_length=2000000)   
     class Meta:
         unique_together = (("idTienda","idProducto"),)
