@@ -43,19 +43,35 @@ align: center;
 	</br>
 	</br>
 	</div>
-	 <table border=2>
+	 <table border=2 width="100%"> 
 	 <tr bgcolor = "black" >
 	     <td > <font color= "white"> Nombre del Producto </font> </td>
 		 <td> <font color = "white"> Precio </font> </td>
 		 <td> <font color = "white"> Tienda </font> </td>
-		 <td> <font color = "white"> Enlace  </font> </td>
+		 <td> <font color = "white"> Enlace (Por favor hacer clic en la Imagen)  </font> </td>
 	 </tr>
 	 {% for venta in ventas %}
 	 <tr bgcolor = "white" font color = "black" >
-	     <td> {{venta.idProducto.nombreProducto}} </td>
-		 <td> {{venta.precio}} </td>
-		 <td> {{venta.idTienda.nombreTienda}} </td>
-		 <td> {{venta.direccion}} </td>
+	     <td width="50%"><strong>  {{venta.idProducto.nombreProducto}}</strong> </td>
+		 {% if venta.precio == -1 %}
+                 <td>  Fall&oacute; </td>
+                 {% elif venta.precio == 0 %}
+                 <td> No Encontrado </td>
+                {% else %}
+                  <td> $ {{venta.precio}} </td>
+                {% endif %}
+                   {% if venta.idTienda.nombreTienda == "OLX" %} 
+                    <td width="50"><a href="http://www.olx.com.co"> <img src="http://static01.olx-st.com/mobile-webapp/images/desktop/logo.png"></a> </td>
+
+                   {% elif venta.idTienda.nombreTienda == "Mercado Libre" %} 
+                    <td width ="50"><a href="http://www.mercadolibre.com.co"><img src="http://www.diariolavoz.net/wp-content/uploads/2013/04/mercado.jpeg" width="72" height="72"></a></td>
+                   {% elif venta.idTienda.nombreTienda == "Linio" %} 
+                     <td width="50"><a href="http://www.linio.com.co"> <img src="http://www.luisgyg.com/wp-content/uploads/2013/05/linio-500x298.jpg" height="72"></a> </td>
+                   {% else %}
+                    <td width="50"> <a href="http://www.exito.com"> <img src="http://www.exito.com/redesign/img/dsn/imgLogoExito01.gif" height="42"></a></td>
+                   {% endif %}
+	
+		 <td width ="50"> <a href="{{venta.direccion}}"> <img src="{{venta.imagen}}"></a> </td>
 	 </tr>
 	 {% endfor %}
 	 </table>

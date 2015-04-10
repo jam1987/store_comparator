@@ -49,43 +49,39 @@ def buscar(tupla):
        info = get_info_linio(tupla[2],tupla[0])
     elif tupla[1] == 'Exito':
        info = get_info_exito(tupla[2],tupla[0])
-		
-    try: 
-	
-	    # Se crean dos objetos: Producto y Vende_Producto
-        prod = Producto.objects.create(
-		    idProducto = info[3],
-			nombreProducto = info[1]
-	    )
-        prod.save()	
+    		
+    
+     	
+    	    # Se crean dos objetos: Producto y Vende_Producto
+    prod = Producto.objects.create(
+        idProducto = info[3],
+        nombreProducto = info[1]
+    )
+    prod.save()	
         
-        tienda = get_object_or_404(Tienda,nombreTienda=tupla[1])
-        vende = Vende_Producto.objects.create(
+    tienda = get_object_or_404(Tienda,nombreTienda=tupla[1])
+    vende = Vende_Producto.objects.create(
             idProducto = prod,
             idTienda = tienda,
             precio = info[2],
-		    direccion = info[0],
-            imagen = info[3]
-        )
-        vende.save()
+            direccion = info[0],
+            imagen = info[4]
+    )
+    vende.save()
 		
-		# Se crea la instancia Pusher 
-        p = pusher.Pusher(
+    # Se crea la instancia Pusher 
+    p = pusher.Pusher(
             app_id='113190',
             key='8ab69fb95f1656821b78',
             secret='7d2e9bf083500c9b00de'
-        )
-        nombre = prod.nombreProducto
-        precio = vende.precio
-        nombreTienda = tienda.nombreTienda
-        direccion = vende.direccion
-	imagen = vende.imagen	
-		# Se envian los datos
-        p['test_channel'].trigger('my_event', {'message': nombre, 'message1':precio,'message2':nombreTienda, 'message3':direccion,'message4':imagen})
-   
-    except IntegrityError:
-        transaction.rollback()
-        return 1
+    )
+    nombre = prod.nombreProducto
+    precio = vende.precio
+    nombreTienda = tienda.nombreTienda
+    direccion = vende.direccion
+    imagen = vende.imagen	
+    # Se envian los datos
+    p['test_channel'].trigger('my_event', {'message': nombre, 'message1':precio,'message2':nombreTienda, 'message3':direccion,'message4':imagen})
     return 0
 	
 
@@ -108,16 +104,17 @@ def buscar(tupla):
 def get_info_m_l(direccion,elemento):
     web = direccion+elemento
     direccion = ''.join(web)
+    imagen = ""
     informacion = requests.get(direccion)
     if informacion.status_code == 200:
         scrapping = BeautifulSoup(informacion.text)
         info_producto = scrapping.find(id="searchResults")
         contenido = info_producto.a 
         enlace = contenido["href"]
-        # imagen = contenido.img["src"]
+        imagen = info_producto.img["src"]
         nombre = ''
         nombre_producto = ''
-        monto = ''
+        monto = 0
         id = ''
         for elem in contenido.contents:
             nombre = nombre + elem.encode('utf-8') 
@@ -126,7 +123,7 @@ def get_info_m_l(direccion,elemento):
             nombre_producto = nombre_producto_old.replace("</strong>","")
         monto_texto = info_producto.div 	
         monto_1 = monto_texto.div
-        monto = (monto_1.strong.contents[0].encode('utf-8')).replace("$\xc2\xa0","")
+        monto = int(((((monto_1.strong.contents[0].encode('utf-8')).replace("$\xc2\xa0","")).replace(" ","")).replace(".","")).replace(",","."))
         i=0
         id =  nombre_producto[0:2]+str(i)
         i = i + 1
@@ -134,10 +131,10 @@ def get_info_m_l(direccion,elemento):
     else:
         nombre_producto = elemento
         id = nombre_producto[0:2]
-        monto = "Fallo"
+        monto = -1
         enlace = ""
         imagen = ""
-    return (enlace,nombre_producto,monto,id,"")	
+    return (enlace,nombre_producto,monto,id,imagen)	
 
 	
 # Nombre de la Funcion: Get_info_linio
@@ -167,31 +164,35 @@ def get_info_linio(direccion,elemento):
     if not_found is None:
         info_producto = scrapping.find(id="catalog-content")
         if info_producto is None:
-           monto = "Fallo"
+           monto = -1
            i = 1
+           imagen = ""
+           enlace = ""
            nombre_producto = elemento
            id = nombre_producto[0:2]+str(i)
         else:
             contenido = info_producto.a 
-            monto = ""
+            monto = -1
             id = ""
             enlace = contenido["href"]
             nombre_producto = contenido["title"]
-            #imagen = contenido.li.span.span.img["src"]
+            imagen = contenido.li.span.span.img["data-original"]
             monto_aux = contenido.li.find_next("li").find_next("li").find_next("li").span.find_next("span")
             if len(monto_aux.contents) > 0:
-                monto = monto_aux.contents[0]
+                monto = int((((monto_aux.contents[0]).replace("$","")).replace(".","")).replace(",","."))
             else:
-                 monto = "Fallo"
+                 monto = -1
                  i = 1
+                 imagen = ""
+                 enlace = ""
                  nombre_producto = elemento
                  id = nombre_producto[0:2]+str(i)	
     else:	
-        monto = "No Encontrado"
+        monto = 0
         i = 1
         nombre_producto = elemento
         id = nombre_producto[0:2]+str(i)	
-    return (enlace,nombre_producto,monto,id,"")
+    return (enlace,nombre_producto,monto,id,imagen)
 
 # Nombre de la Funcion: Get_info_olx
 # Parametros de entrada: - Direccion: Corresponde a la URL de OLX
@@ -226,16 +227,24 @@ def get_info_olx(direccion,elemento):
     scrapping = BeautifulSoup(informacion.text)
     info_producto = scrapping.find(id="listing-items")
     enlace = ""
-    contenido = info_producto.find_next("ul").find_next("ul").find_next("ul").find_next("ul").find_next("ul")
-    enlace = contenido.li.a["href"]
-    imagen = str(contenido.li.a.figure.img["src"])
-    print(imagen)
-    nombre_producto = (contenido.li.h3.contents[0].encode("utf-8")).replace("\xc2\xa1","")
-    monto = (str(contenido.li.p.contents[0]).replace(" ","")).replace("\n","")
-    id = ''
-    i=3
-    id =  nombre_producto[0:2]+str(i)
-    id = ''.join(id)	
+    if info_producto is None:
+        nombre_producto = elemento
+        monto = -1
+    else:
+        contenido = info_producto.find_next("ul").find_next("ul").find_next("ul").find_next("ul").find_next("ul")
+        if contenido is None:
+            nombre_producto = elemento
+            monto = -1
+        else:
+            enlace = contenido.li.a["href"]
+            imagen = str(contenido.li.a.figure.img["src"])
+   
+            nombre_producto = (contenido.li.h3.contents[0].encode("utf-8")).replace("\xc2\xa1","")
+            monto = int(((((str(contenido.li.p.contents[0]).replace(" ","")).replace("\n","")).replace("$","")).replace(".","")).replace(",","."))
+        id = ''
+        i=3
+        id =  nombre_producto[0:2]+str(i)
+        id = ''.join(id)	
     return (enlace,nombre_producto,monto,id,imagen)
 
 # Nombre de la Funcion: Get_info_exito
@@ -259,29 +268,32 @@ def get_info_exito(direccion,elemento):
     direccion = ''.join(web)
     informacion = requests.get(direccion)
     datos = BeautifulSoup(informacion.text)
-    monto = ""
+    monto = 0
     imagen = ""
     info_producto = datos.find(id="plpContent")
 	
     if  info_producto is None:       
         nombre_producto = elemento
-        monto = "Fallo"
+        monto = -1
         enlace = ""
-        i = 2
-        id = nombre_producto[0:2]+str(i)
-        id = ''.join(id)
     else:
          contenido = info_producto.div
-         enlace = "www.exito.com"+info_producto.a["href"]
-         enlace = ''.join(enlace)
-         # imagen = info_producto.img["src"]
-         nombre_producto = contenido.h2.contents[0]
-         monto = contenido.h4.contents[0].replace("\n\t\t\t\t\t\t","")
-         i = 2
-         id = nombre_producto[0:2]+str(i)
-         id = ''.join(id)
+         if contenido is None:
+             nombre_producto = elemento
+             monto = -1
+             enlace = ""
+         else:
+             enlace = "http://www.exito.com"+info_producto.a["href"]
+             enlace = ''.join(enlace)
+             imagen ="http://www.exito.com/"+ info_producto.img["src"]
+             imagen = ''.join(imagen)
+             nombre_producto = contenido.h2.contents[0]
+             monto = int((((contenido.h4.contents[0].replace("\n\t\t\t\t\t\t","")).replace("$","")).replace(".","")).replace(",","."))
+    i = 2
+    id = nombre_producto[0:2]+str(i)
+    id = ''.join(id)
         
-    return (enlace,nombre_producto,monto,id,"")
+    return (enlace,nombre_producto,monto,id,imagen)
 		
 @app.task
 def xsum(numbers):

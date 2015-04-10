@@ -28,6 +28,11 @@ text-align : center;
 align: center;
 }
 
+#subtitle
+{
+    text-align : center;
+}
+
    
 </style>
     <header>
@@ -48,46 +53,37 @@ align: center;
     var imagenes = []
 	  document.write("<header>  Busqueda Realizada </header>"); 
      channel.bind('my_event', function(data) {
-      alert(i);
-      i = i + 1;
+      if (i<4) {
+      alert("Se ha recibido la informacion de "+data.message2+". Por favor espere...");
+      } else {
+         alert("Se ha recibido la informacion de "+data.message2+". A continuacion se mostraran los resultados. Presione ACEPTAR");
+      }
+      
        productos.push(data.message);
        precios.push(data.message1);
        tiendas.push(data.message2);
        enlaces.push(data.message3);
        imagenes.push(data.message4);
-     // document.write(data.message);
-//	  document.write("</br>");
-//	  document.write("</br>");
-//	  document.write(data.message1);
-//	  document.write("</br>");
-//	  document.write("</br>");
-//	  document.write(data.message2);
-//	  document.write("</br>");
-//	  document.write("</br>");
-//	  document.write(data.message3);
-//	  document.write("</br>");
-//	  document.write("</br>");
-//	    document.write("_______________________________________________________________________________________________");
-//		document.write("</br>");
-		//$('#js-table tr:last').after('<tr><td>Esto es una prueba</td></tr>');
-          if (i == 5) {
+          if (i == 4) {
             
              document.write("<html>");
              var css= document.createElement("style");  
              css.type = "text/css";
              css.innerHTML = "header {  color: white; background-color:black; display:block; text-align:center; overflow:hidden; } ";
-             css.innerHTML += "th { color: white; background-color:black; overflow:hidden;}";           
+             css.innerHTML += "th { color: white; background-color:black; overflow:hidden;}"; 
+             css.innerHTML += "#sub { text-align: center; }";          
              document.getElementsByTagName("html")[0].appendChild(css);
                       
              document.write("<header> <H1> Informaci&oacute;n Detallada  </H1> </header>");
              document.write("<body>");
              document.write("</br>");
              document.write("</br>");
+             document.write('<h2 id="sub"> La Informaci&oacute;n buscada es la que se muestra en la siguiente tabla:</h2>');
              document.write("</br>");
              document.write("</br>");
              var counter = 0;
              
-             document.write("<table border=2>");
+             document.write('<table border=2 width=100%>');
              document.write('<tr>');
              document.write('<th>  Nombre del producto </th>');
              document.write('<th>   Precio  </th>');
@@ -96,28 +92,36 @@ align: center;
              document.write("</tr>");
              while (counter < 4) {
                 document.write('<tr>');
-                document.write('<td>'+ productos[counter] +'</td>');
-                document.write('<td>'+ precios[counter] +'</td>');
+                document.write('<td width=50%><strong>'+ productos[counter] +'</strong></td>');
+               if (precios[counter]==-1) {
+               document.write('<td> Fallo </td>');
+               } else if (precios[counter]==0) {
+                document.write('<td> No Encontrado </td>');
+               } else {
+               document.write('<td> $ '+ precios[counter] +'</td>');
+               }
                 if (tiendas[counter]=='OLX') {
-                    document.write('<td> <img src="http://static01.olx-st.com/mobile-webapp/images/desktop/logo.png"> </td>');
+                    document.write('<td width=50><a href="http://www.olx.com.co"> <img src="http://static01.olx-st.com/mobile-webapp/images/desktop/logo.png"></a> </td>');
                     
                 } else if(tiendas[counter]=='Mercado Libre') {
-                    document.write('<td><img src="http://www.diariolavoz.net/wp-content/uploads/2013/04/mercado.jpeg" width="72" height="72"></td>');
+                    document.write('<td width =50><a href="http://www.mercadolibre.com.co"><img src="http://www.diariolavoz.net/wp-content/uploads/2013/04/mercado.jpeg" width="72" height="72"></a></td>');
                } else if (tiendas[counter]=='Linio') {
-                     document.write('<td> <img src="http://www.luisgyg.com/wp-content/uploads/2013/05/linio-500x298.jpg" height="72">  </td>');
+                     document.write('<td width=50><a href="http://www.linio.com.co"> <img src="http://www.luisgyg.com/wp-content/uploads/2013/05/linio-500x298.jpg" height="72"></a> </td>');
                } else {
-                    document.write('<td> <img src="http://www.exito.com/redesign/img/dsn/imgLogoExito01.gif"></td>');
+                    document.write('<td width=50><a href="http://www.exito.com"> <img src="http://www.exito.com/redesign/img/dsn/imgLogoExito01.gif"></a></td>');
                 }
-                document.write('<td>'+imagenes[counter]+'</td>');
+                document.write('<td width=50><a href="'+enlaces[counter]+'"><img src="'+imagenes[counter]+'"></a></td>');
                 document.write('</tr>');
                 counter++;
              }
              document.write("</table>");
            
-             
+             document.write('<a href="/index/"> Regresar </a>');
+             document.write('<a href="/stores/compartir/"> Compartir Enlace </a>');            
              document.write("</body>"); 
              document.write("</html>");
           } 
+          i++;
 	 
     }); 
 
@@ -128,9 +132,10 @@ align: center;
   
     </header>
     <BODy>
-    <TABLE ID="js-table">
-    <tbody>
-    </tbody>
-    </table>
+    <h2 id="subtitle"> Estamos procesando su solicitud en diferentes tiendas... </h2>
+    </br>
+    </br>
+    </br>
+    <img id="img2" src="http://jcorreiomariliense.com.br/wp-content/uploads/2014/05/M1-MAIS-QUE-GENTE.jpg">
     </BODY>
 </HTML>

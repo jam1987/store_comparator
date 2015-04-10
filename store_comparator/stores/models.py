@@ -15,7 +15,7 @@ class Tienda(models.Model):
 class Vende_Producto(models.Model):
     idTienda = models.ForeignKey(Tienda)
     idProducto = models.ForeignKey(Producto)
-    precio = models.CharField(max_length=200) 
+    precio = models.DecimalField(max_digits=20,decimal_places=2) 
     direccion = models.URLField(max_length=200000)	
     imagen = models.URLField(max_length=2000000)   
     class Meta:
